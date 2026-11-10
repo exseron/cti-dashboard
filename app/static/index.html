@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>CTI Dashboard</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span class="logo">◆</span> CTI Dashboard</div>
+  <nav class="tabs" role="tablist">
+    <button class="tab" role="tab" data-tab="news">CTI Haberleri</button>
+    <button class="tab" role="tab" data-tab="cves">CVE'ler</button>
+    <button class="tab" role="tab" data-tab="attack">ATT&amp;CK Navigator</button>
+  </nav>
+</header>
+
+<main>
+  <!-- ================= NEWS ================= -->
+  <section id="panel-news" class="panel" hidden>
+    <div class="toolbar">
+      <input id="news-q" type="search" placeholder="Başlık, özet, tag, CVE ara…">
+      <select id="news-source"><option value="">Tüm kaynaklar</option></select>
+      <select id="news-range">
+        <option value="1">Son 24 saat</option>
+        <option value="3" selected>Son 3 gün</option>
+        <option value="7">Son 7 gün</option>
+        <option value="0">Tümü</option>
+      </select>
+      <button id="news-refresh" class="btn ghost" title="Kaynakları şimdi yenile">↻ Yenile</button>
+      <span id="news-status" class="muted small"></span>
+    </div>
+    <div id="news-tags" class="tagbar"></div>
+    <div id="news-list" class="cards"></div>
+    <div class="more-wrap"><button id="news-more" class="btn ghost" hidden>Daha fazla göster</button></div>
+  </section>
+
+  <!-- ================= CVES ================= -->
+  <section id="panel-cves" class="panel" hidden>
+    <div class="toolbar">
+      <input id="cve-q" type="search" placeholder="CVE ID, ürün, açıklama, CWE ara…">
+      <div class="sevs" id="cve-sevs"></div>
+      <label class="check"><input type="checkbox" id="cve-poc"> PoC/Exploit var</label>
+      <label class="check"><input type="checkbox" id="cve-kev"> CISA KEV</label>
+      <select id="cve-sort">
+        <option value="published">Sırala: Yayın tarihi</option>
+        <option value="score">Sırala: CVSS</option>
+        <option value="epss">Sırala: EPSS</option>
+        <option value="pocs">Sırala: PoC sayısı</option>
+      </select>
+      <button id="cve-refresh" class="btn ghost">↻ Yenile</button>
+      <span id="cve-status" class="muted small"></span>
+    </div>
+    <div id="cve-stats" class="stats"></div>
+    <div id="cve-list" class="cve-list"></div>
+    <div class="more-wrap"><button id="cve-more" class="btn ghost" hidden>Daha fazla göster</button></div>
+  </section>
+
+  <!-- ================= ATT&CK ================= -->
+  <section id="panel-attack" class="panel" hidden>
+    <div class="nav-controls">
+      <div class="ctl-group">
+        <span class="ctl-title">Katman</span>
+        <select id="att-domain">
+          <option value="enterprise-attack">Enterprise</option>
+          <option value="mobile-attack">Mobile</option>
+          <option value="ics-attack">ICS</option>
+        </select>
+        <input id="att-name" type="text" placeholder="Katman adı" value="Yeni katman" maxlength="120">
+        <select id="att-platform"><option value="">Tüm platformlar</option></select>
+      </div>
+      <div class="ctl-group">
+        <span class="ctl-title">Seçim</span>
+        <input id="att-search" type="search" placeholder="Teknik ara (ad / ID)…">
+        <button id="att-select-matches" class="btn ghost" title="Arama sonuçlarının tümünü seç">Eşleşenleri seç</button>
+        <input id="att-ids" type="text" placeholder="T1059, T1566.001 …">
+        <button id="att-add-ids" class="btn ghost">ID'leri seç</button>
+        <input id="att-actor" list="att-actor-list" placeholder="Grup / yazılım / kampanya…">
+        <datalist id="att-actor-list"></datalist>
+        <button id="att-add-actor" class="btn ghost">Tekniklerini seç</button>
+        <button id="att-clear-sel" class="btn ghost">Seçimi temizle</button>
+        <span id="att-selcount" class="pill">0 seçili</span>
+      </div>
+      <div class="ctl-group">
+        <span class="ctl-title">Anotasyon</span>
+        <label class="check" title="İşaretli değilse hücre rengi skor gradyanından gelir"><input type="checkbox" id="att-usecolor" checked> Renk</label>
+        <input id="att-color" type="color" value="#e05252" title="Renk">
+        <input id="att-score" type="number" min="0" max="100" placeholder="Skor" title="Skor (0-100)">
+        <input id="att-label" type="text" placeholder="Lejant etiketi" maxlength="60">
+        <input id="att-comment" type="text" placeholder="Yorum" maxlength="300">
+        <button id="att-apply" class="btn">Seçililere uygula</button>
+        <button id="att-remove" class="btn ghost">Seçililerden kaldır</button>
+        <button id="att-reset" class="btn danger ghost">Tümünü sıfırla</button>
+      </div>
+      <div class="ctl-group">
+        <span class="ctl-title">Görünüm</span>
+        <label class="check"><input type="checkbox" id="att-showsubs"> Alt teknikleri aç</label>
+        <label class="check"><input type="checkbox" id="att-only"> Sadece işaretliler</label>
+        <label class="check"><input type="checkbox" id="att-showid" checked> ID göster</label>
+        <label class="check"><input type="checkbox" id="att-light" checked> Açık tema PNG</label>
+        <select id="att-scale" title="PNG çözünürlüğü">
+          <option value="1">1x</option><option value="2" selected>2x</option><option value="3">3x</option>
+        </select>
+        <button id="att-png" class="btn">⬇ PNG</button>
+        <button id="att-export" class="btn ghost">Layer JSON dışa aktar</button>
+        <label class="btn ghost file-btn">Layer JSON içe aktar<input id="att-import" type="file" accept=".json,application/json" hidden></label>
+      </div>
+    </div>
+    <div id="att-status" class="muted small"></div>
+    <div class="matrix-scroll">
+      <div id="att-export-area" class="export-area">
+        <div class="export-head">
+          <div id="att-title" class="export-title"></div>
+          <div id="att-subtitle" class="export-sub"></div>
+        </div>
+        <div id="att-matrix" class="matrix"></div>
+        <div id="att-legend" class="legend"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="toast" class="toast" hidden></div>
+<script src="/static/vendor/html2canvas.min.js"></script>
+<script src="/static/app.js"></script>
+</body>
+</html>
